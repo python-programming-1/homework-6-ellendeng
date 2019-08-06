@@ -8,7 +8,7 @@ def get_video_data():
 
     vid_data = []
     with open('USvideos.csv', newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         for row in spamreader:
             if len(row) == 16:
                 vid_dict = {'video_id': row[0],
@@ -36,11 +36,60 @@ def print_data(data):
     for entry in data:
         pprint.pprint(entry)
 
+def my_max_views(dictionary):
+    return_dict = {'views': 0, 'channel': None}
+
+    for i,j in dictionary.items():
+        if int(j) > return_dict['views']:
+            return_dict['channel'] = i
+            return_dict['views'] = int(j)
+    return return_dict
+
+def my_max_likes(dictionary):
+    return_dict = {'likes': 0, 'channel': None}
+
+    for i,j in dictionary.items():
+        if int(j) > return_dict['likes']:
+            return_dict['channel'] = i
+            return_dict['likes'] = int(j)
+    return return_dict
+
+def my_max_dislikes(dictionary):
+    return_dict = {'dislikes': 0, 'channel': None}
+
+    for i,j in dictionary.items():
+        if int(j) > return_dict['dislikes']:
+            return_dict['channel'] = i
+            return_dict['dislikes'] = int(j)
+    return return_dict
+
+def my_min_views(dictionary):
+    return_dict = {'views': float('Inf'), 'channel': None}
+
+    for i,j in dictionary.items():
+        if int(j) < return_dict['views']:
+            return_dict['channel'] = i
+            return_dict['views'] = int(j)
+    return return_dict
+
 
 def get_most_popular_and_least_popular_channel(data):
     """ fill in the Nones for the dictionary below using the vid data """
     most_popular_and_least_popular_channel = {'most_popular_channel': None, 'least_popular_channel': None, 'most_pop_num_views': None,
                                               'least_pop_num_views': None}
+    sum_channel = {}
+
+    for item in data[1:]:
+        sum_channel.setdefault(item['channel_title'],0)
+        sum_channel[item['channel_title']] += int(item['views'])
+
+    most_popular_dic = my_max_views(sum_channel)
+    least_popular_dic = my_min_views(sum_channel)
+
+    most_popular_and_least_popular_channel['most_popular_channel'] = most_popular_dic['channel']
+    most_popular_and_least_popular_channel['most_pop_num_views'] = most_popular_dic['views']
+    most_popular_and_least_popular_channel['least_popular_channel'] = least_popular_dic['channel']
+    most_popular_and_least_popular_channel['least_pop_num_views'] = least_popular_dic['views']
 
     return most_popular_and_least_popular_channel
 
@@ -50,6 +99,26 @@ def get_most_liked_and_disliked_channel(data):
 
     most_liked_and_disliked_channel = {'most_liked_channel': None, 'num_likes': None, 'most_disliked_channel': None, 'num_dislikes': None}
 
+    sum_likes= {}
+    sum_dislikes ={}
+
+    for item in data[1:]:
+        sum_likes.setdefault(item['channel_title'],0)
+        sum_likes[item['channel_title']] += int(item['likes'])
+
+    for item in data[1:]:
+        sum_dislikes.setdefault(item['channel_title'],0)
+        sum_dislikes[item['channel_title']] += int(item['dislikes'])
+
+    most_like_dic = my_max_likes(sum_likes)
+    most_dislike_dic = my_max_dislikes(sum_dislikes)
+
+    most_liked_and_disliked_channel['most_liked_channel'] = most_like_dic['channel']
+    most_liked_and_disliked_channel['num_likes'] = most_like_dic['likes']
+
+    most_liked_and_disliked_channel['most_disliked_channel'] = most_dislike_dic['channel']
+    most_liked_and_disliked_channel['num_dislikes'] = most_dislike_dic['dislikes']
+
     return most_liked_and_disliked_channel
 
 
@@ -57,7 +126,7 @@ if __name__ == '__main__':
     vid_data = get_video_data()
 
     # uncomment the line below to see what the data looks like
-    print_data(vid_data)
+    # print_data(vid_data)
 
     popularity_metrics = get_most_popular_and_least_popular_channel(vid_data)
 
